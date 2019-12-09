@@ -5,10 +5,14 @@ from tkinter.colorchooser import askcolor
 from PIL import Image, ImageTk
 import numpy as np
 
+xCoords = []
+yCoords = []
+annotation_values = []
+
 class Paint(object):
 
     DEFAULT_PEN_SIZE = 5.0
-    DEFAULT_COLOR = 'black'
+    DEFAULT_COLOR = 'green'
 
     def __init__(self, paint_utils_frame):
         self.root = paint_utils_frame
@@ -19,14 +23,6 @@ class Paint(object):
         self.bgd_button = Button(self.root, text='background label', command=self.label_bgd)
         self.bgd_button.grid(row=0, column=1)
 
-        # self.brush_button = Button(self.root, text='brush', command=self.use_brush)
-        # self.brush_button.grid(row=0, column=1)
-
-        # self.color_button = Button(self.root, text='color', command=self.choose_color)
-        # self.color_button.grid(row=0, column=2)
-
-        # self.eraser_button = Button(self.root, text='eraser', command=self.use_eraser)
-        # self.eraser_button.grid(row=0, column=3)
 
         self.choose_size_button = Scale(self.root, from_=1, to=10, orient=HORIZONTAL)
         self.choose_size_button.grid(row=0, column=4)
@@ -47,7 +43,8 @@ class Paint(object):
         self.old_y = None
         self.line_width = self.choose_size_button.get()
         self.color = self.DEFAULT_COLOR
-        # self.eraser_on = False
+        # 0 is foreground, 1 is background
+        self.ann_mode = 0
         self.active_button = self.fgd_button
         self.c.bind('<B1-Motion>', self.paint)
         self.c.bind('<ButtonRelease-1>', self.reset)
@@ -57,21 +54,13 @@ class Paint(object):
     
     def label_fgd(self):
         self.color = "green"
+        self.ann_mode = 0
         self.activate_button(self.fgd_button)
 
     def label_bgd(self):
         self.color = "red"
+        self.ann_mode = 1
         self.activate_button(self.bgd_button)
-
-    # def use_brush(self):
-    #     self.activate_button(self.brush_button)
-
-    # def choose_color(self):
-    #     self.eraser_on = False
-    #     self.color = askcolor(color=self.color)[1]
-
-    # def use_eraser(self):
-    #     self.activate_button(self.eraser_button, eraser_mode=True)
 
     def activate_button(self, some_button, eraser_mode=False):
         self.active_button.config(relief=RAISED)
@@ -88,12 +77,15 @@ class Paint(object):
         self.old_x = event.x
         self.old_y = event.y
 
+        # save label coordinates
+        xCoords.append(event.x)
+        yCoords.append(event.y)
+        annotation_values.append(self.ann_mode)
+        print('{}, {}, {}'.format(event.x, event.y, self.ann_mode))
+
     def reset(self, event):
         self.old_x, self.old_y = None, None
 
-def saveCoordinates(x,y):
-    xCoords.append(x)
-    yCoords.append(y)
 
 def createImage():
     print("width: ", imgWidth, "height: ", imgHeight)
@@ -104,10 +96,6 @@ def createImage():
     #todo: PIL.Image.fromarray()
     # https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
     
-def motion(event):
-    x, y = event.x, event.y
-    print('{}, {}'.format(x, y))
-    saveCoordinates(x,y)
 
 def endLabel():
     print("end labelling")
@@ -127,9 +115,6 @@ def start_gui(path):
     middle.pack(side="top")
     bottom.pack(side="bottom", fill="both", expand=True)
 
-    xCoords = []
-    yCoords = []
-
     title = tk.Label(root, text="Annotate foreground and background. Click buttons to begin, click \"Finish labelling\" when done")
     title.pack(in_=top, side="left")
 
@@ -139,8 +124,6 @@ def start_gui(path):
 
     Paint(paint_utils_frame)
 
-    # click-and-drage mouse event
-    root.bind("<B1-Motion>", motion)
     root.mainloop()
 
 if __name__ == "__main__":
