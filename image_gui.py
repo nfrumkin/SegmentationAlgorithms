@@ -4,17 +4,20 @@ from tkinter import *
 from tkinter.colorchooser import askcolor
 from PIL import Image, ImageTk
 import numpy as np
+import pickle
 
 xCoords = []
 yCoords = []
 annotation_values = []
+imgHeight = 0
+imgWidth = 0
 
 class Paint(object):
 
     DEFAULT_PEN_SIZE = 5.0
     DEFAULT_COLOR = 'green'
 
-    def __init__(self, paint_utils_frame):
+    def __init__(self, paint_utils_frame, path):
         self.root = paint_utils_frame
 
         self.fgd_button = Button(self.root, text='foreground label', command=self.label_fgd)
@@ -27,12 +30,13 @@ class Paint(object):
         self.choose_size_button = Scale(self.root, from_=1, to=10, orient=HORIZONTAL)
         self.choose_size_button.grid(row=0, column=4)
 
-        path = "imgs/cow.jpg"
         img = ImageTk.PhotoImage(Image.open(path))
         imgHeight = img.height()
         imgWidth = img.width()
         self.c = Canvas(self.root, bg='white', width=imgWidth, height=imgHeight)
-        self.c.create_image(self.root.winfo_x(),self.root.winfo_y(), image=img, anchor=tk.NW)
+        imgX = self.root.winfo_x()
+        imgY = self.root.winfo_y()
+        self.c.create_image(imgY,imgY, image=img, anchor=tk.NW)
         self.c.grid(row=1, columnspan=5)
 
         self.setup()
@@ -87,21 +91,39 @@ class Paint(object):
         self.old_x, self.old_y = None, None
 
 
-def createImage():
-    print("width: ", imgWidth, "height: ", imgHeight)
-    imgArray = np.zeros([imgWidth,imgHeight])
-    for i in range(0,len(xCoords)):
-        imgArray[xCoords[i], yCoords[i]] = 1
+# def createImage():
+#     print("width: ", imgWidth, "height: ", imgHeight)
+#     imgArray = np.zeros([imgWidth,imgHeight])
+#     for i in range(0,len(xCoords)):
+#         imgArray[xCoords[i], yCoords[i]] = 1
     
-    #todo: PIL.Image.fromarray()
-    # https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
+#     #todo: PIL.Image.fromarray()
+#     # https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
     
 
 def endLabel():
-    print("end labelling")
-    # imgWidth = panel2.winfo_reqwidth()
-    # imgHeight = panel2.winfo_reqheight()
-    createImage()
+    src_conns_x = []
+    src_conns_y = []
+    sink_conns_x = []
+    sink_conns_y = []
+    for i in range(0,len(annotation_values)):
+        if annotation_values[i] == 0:
+            src_conns_x.append(xCoords[i])
+            src_conns_y.append(yCoords[i])
+        else:
+            sink_conns_x.append(xCoords[i])
+            sink_conns_y.append(yCoords[i])
+    src_connections = np.array(src_conns_x)
+    src_connections = np.vstack([src_connections, src_conns_y])
+    sink_connections = np.array(sink_conns_x)
+    sink_connections = np.vstack([sink_connections, sink_conns_y])
+    f = open("src_conns.pkl", 'wb')
+    pickle.dump(src_connections, f)
+    f.close()
+    f = open("sink_conns.pkl", 'wb')
+    pickle.dump(sink_connections, f)
+    f.close()
+        
 
 def start_gui(path):
     root = tk.Tk()
@@ -122,10 +144,10 @@ def start_gui(path):
     endButton = tk.Button(middle, text="finish labelling", command=endLabel)
     endButton.pack(in_=middle, side="left")
 
-    Paint(paint_utils_frame)
+    Paint(paint_utils_frame, path)
 
     root.mainloop()
 
 if __name__ == "__main__":
-    img_path = "imgs/cow.jpg"
+    img_path = "imgs/chicken.jpg"
     start_gui(img_path)

@@ -29,10 +29,12 @@ class edmonds_karp():
     
     def edmonds_karp(self, src, sink):
         parent = -1*np.ones([self.num_nodes, 1], dtype=int)
-
+        print(self.graph)
         max_flow = 0
-
+        step = 0
         while self.bfs(src, sink, parent):
+            print(step)
+            step = step + 1
             path_flow = float("Inf")
             s = sink
             while s != src:
@@ -46,6 +48,7 @@ class edmonds_karp():
                 self.graph[u,v] = self.graph[u,v] - path_flow
                 self.graph[v,u] = self.graph[v,u] + path_flow
                 v = parent[u]
+        print(self.graph)
         return max_flow
 
 if __name__ == "__main__":
@@ -53,20 +56,20 @@ if __name__ == "__main__":
     a[1,2] = 1
     a[1,3] = 6
     a[1,4] = 4
-    a[3,1] = 2
-    a[3,4] = 3
-    a[3,6] = 2
     a[2,5] = 8
+    a[3,6] = 2
+    a[3,4] = 3
+    a[3,2] = 1
     a[4,7] = 6
     a[5,6] = 3
-    a[7,6] = 4
-    a[6,9] = 4
     a[5,8] = 2
+    a[6,9] = 4
+    a[7,6] = 4
     a[7,10] = 100
-    a[9,10] = 5
     a[8,9] = 3
-    a[9,11] = 6
     a[8,11] = 8
+    a[9,10] = 5
+    a[9,11] = 6
     a[10,11] = 9
 
     # remove first row and column so indexing remains correct
