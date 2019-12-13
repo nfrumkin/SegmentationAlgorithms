@@ -43,7 +43,6 @@ class Graph():
         return np.exp(exponent)
     
     def create_neighbors(self):
-        # self.adj_matrix = np.zeros([self.num_nodes+2, self.num_nodes], dtype=float)
         for i in range(0,self.length):
             for j in range(0,self.width):
                 if i > 0:
@@ -53,7 +52,6 @@ class Graph():
                     nd2 = nd2_i*self.width+nd2_j
                     weight = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                     self.g.add_edge(nd1, nd2, weight, 0)
-                    # self.adj_matrix[nd1, nd2] = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                 elif i < self.width - 1:
                     nd1 = i*self.width + j
                     nd2_i = i+1
@@ -61,7 +59,6 @@ class Graph():
                     nd2 = nd2_i*self.width+nd2_j
                     weight = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                     self.g.add_edge(nd1, nd2, weight, 0)
-                    # self.adj_matrix[nd1, nd2] = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                 elif j > 0:
                     nd1 = i*self.width + j
                     nd2_i = i
@@ -69,7 +66,6 @@ class Graph():
                     nd2 = nd2_i*self.width+nd2_j
                     weight = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                     self.g.add_edge(nd1, nd2, weight, 0)
-                    # self.adj_matrix[nd1, nd2] = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                 elif j < self.length - 1:
                     nd1 = i*self.width + j
                     nd2_i = i
@@ -77,7 +73,6 @@ class Graph():
                     nd2 = nd2_i*self.width+nd2_j
                     weight = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
                     self.g.add_edge(nd1, nd2, weight, 0)
-                    # self.adj_matrix[nd1, nd2] = self.get_interpixel_weight(i,j, nd2_i, nd2_j)
         
     def compute_conditional_probs(self):
         self.mu_src = np.mean(self.src_conns, axis=0)
@@ -92,8 +87,6 @@ class Graph():
         return multivariate_normal.pdf(value, mean=self.mu_sink, cov=self.cov_sink)
         
     def calculate_weights(self):
-        # src_weights = np.zeros([self.num_nodes,1])
-        # sink_weights = np.zeros([self.num_nodes,1])
         for i in range(0,self.num_nodes):
             x_value = i / self.width
             y_value = i % self.width
@@ -102,29 +95,13 @@ class Graph():
             p_sink = self.p_sink(value)
             p_src = self.p_src(value)
             total_prob = p_sink + p_src
+
             # normalize
             p_sink = p_sink/total_prob
             p_src = p_src/total_prob
+
             # compute weights
             self.g.add_tedge(i,10*p_sink, 3*p_src)
-            # src_weights[i] = -self.lmbda*np.log(p_sink)
-            # sink_weights[i] = -self.lmbda*np.log(p_src)
-
-        # for i in range(0,self.src_conns.shape[0]):
-        #     node_number = self.src_conns[i,0]*self.width + self.src_conns[i,1]
-        #     src_weights[node_number] = 1
-        #     sink_weights[node_number] = 0
-        
-        # for i in range(0,self.sink_conns.shape[0]):
-        #     node_number = self.sink_conns[i,0]*self.width + self.sink_conns[i,1]
-        #     src_weights[node_number] = 0
-        #     sink_weights[node_number] = 1
-        
-        # new_weights = np.vstack([np.transpose(src_weights), np.transpose(sink_weights)])
-        # append sink/src weights to matrix   
-        # print("stacking..")
-        # self.adj_matrix[self.num_nodes,:] = np.transpose(src_weights)
-        # self.adj_matrix[self.num_nodes+1,:] = np.transpose(sink_weights)
 
 def read_annotations_pkl(src_path, sink_path):
     f = open(src_path, "rb")
@@ -147,10 +124,7 @@ if __name__ == "__main__":
     mygraph = Graph(img_path, src_connections, sink_connections)
     stop = time.time()
     print("elapsed: ", stop - start)
-    # print(mygraph.adj_matrix)
-    # f = open("adj_mat.pkl", "wb")
-    # pickle.dump(mygraph.adj_matrix, f)
-    # f.close()
+
     print("Computing Max Flow..")
     start = time.time()
     flow = mygraph.g.maxflow()

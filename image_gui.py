@@ -11,6 +11,7 @@ yCoords = []
 annotation_values = []
 imgHeight = 0
 imgWidth = 0
+finishedLabelling = False
 
 class Paint(object):
 
@@ -38,8 +39,10 @@ class Paint(object):
         imgY = self.root.winfo_y()
         self.c.create_image(imgY,imgY, image=img, anchor=tk.NW)
         self.c.grid(row=1, columnspan=5)
-
         self.setup()
+        if finishedLabelling:
+            root.destroy()
+        print("here1")
         self.root.mainloop()
 
     def setup(self):
@@ -89,16 +92,6 @@ class Paint(object):
 
     def reset(self, event):
         self.old_x, self.old_y = None, None
-
-
-# def createImage():
-#     print("width: ", imgWidth, "height: ", imgHeight)
-#     imgArray = np.zeros([imgWidth,imgHeight])
-#     for i in range(0,len(xCoords)):
-#         imgArray[xCoords[i], yCoords[i]] = 1
-    
-#     #todo: PIL.Image.fromarray()
-#     # https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
     
 
 def endLabel():
@@ -123,6 +116,8 @@ def endLabel():
     f = open("sink_conns.pkl", 'wb')
     pickle.dump(sink_connections, f)
     f.close()
+    print("saved src and sink labels")
+    finishedLabelling = True
         
 
 def start_gui(path):
@@ -145,7 +140,9 @@ def start_gui(path):
     endButton.pack(in_=middle, side="left")
 
     Paint(paint_utils_frame, path)
-
+    print("HERE")
+    if finishedLabelling:
+        root.destroy()
     root.mainloop()
 
 if __name__ == "__main__":
