@@ -40,9 +40,6 @@ class Paint(object):
         self.c.create_image(imgY,imgY, image=img, anchor=tk.NW)
         self.c.grid(row=1, columnspan=5)
         self.setup()
-        if finishedLabelling:
-            root.destroy()
-        print("here1")
         self.root.mainloop()
 
     def setup(self):
@@ -140,7 +137,6 @@ def start_gui(path):
     endButton.pack(in_=middle, side="left")
 
     Paint(paint_utils_frame, path)
-    print("HERE")
     if finishedLabelling:
         root.destroy()
     root.mainloop()
